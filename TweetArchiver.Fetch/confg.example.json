@@ -1,0 +1,25 @@
+﻿{
+  "Logging": {
+    "IncludeScopes": false,
+    "LogLevel": {
+      "Default": "Debug"
+    }
+  },
+  "Twitter": {
+    "Credentials": {
+      "ConsumerKey": "",
+      "ConsumerSecret": "",
+      "AccessToken": "",
+      "AccessSecret": ""
+    },
+    "Fetch": {
+      "ScreenNames": [
+        "northernline"
+      ]
+    }
+  },
+  "RabbitMq": {
+    "Url": "",
+    "TargetExchange": "amq.topic"
+  }
+}
