@@ -10,6 +10,6 @@ namespace TweetArchiver.Fetch
 
         public int MaxBatchRetrieved { get; set; } = 200;
 
-        public TimeSpan BatchDelay { get; set; } = TimeSpan.FromMilliseconds(200);
+        public int ParallelFetches { get; set; } = 4;
     }
 }

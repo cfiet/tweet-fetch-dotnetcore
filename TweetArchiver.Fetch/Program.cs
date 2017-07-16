@@ -86,12 +86,12 @@ namespace TweetArchiver.Fetch
             {
                 var watch = new Stopwatch();
                 watch.Start();
-                var fetching = fetchOptions.Value.ScreenNames.Select(async (screenName, i) =>
+                foreach(var batch in fetchOptions.Value.ScreenNames.Batch(fetchOptions.Value.ParallelFetches))
                 {
-                    await Task.Delay(i * fetchOptions.Value.BatchDelay.Milliseconds);
-                    await Task.Run(() => FetchTweetsToRabbitMq(fetcher, serviceProvider, screenName, fetchOptions.Value.MaxBatchRetrieved));
-                });
-                Task.WhenAll(fetching).Wait();
+                    Task.WhenAll(batch.Select(screenName =>
+                        Task.Factory.StartNew(() => FetchTweetsToRabbitMq(fetcher, serviceProvider, screenName, fetchOptions.Value.MaxBatchRetrieved))
+                    )).Wait();
+                }
                 watch.Stop();
                 logger.LogInformation($"Fetching has completed, total time taken: {watch.Elapsed}");
             }
