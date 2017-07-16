@@ -80,19 +80,18 @@ namespace TweetArchiver.Fetch
 
             if (fetchOptions.Value == null) throw new ArgumentNullException("FetcherOptions");
 
-            logger.LogInformation($"Found {fetchOptions.Value.ScreenNames.Count()} screen names to fetch. Starting fetching in batches of {fetchOptions.Value.ParallelFetches}");
+            logger.LogInformation($"Found {fetchOptions.Value.ScreenNames.Count()} screen names to fetch");
 
             using (serviceProvider.GetRequiredService<IConnection>())
             {
                 var watch = new Stopwatch();
                 watch.Start();
-                foreach (var batch in fetchOptions.Value.ScreenNames.Batch(fetchOptions.Value.ParallelFetches))
+                var fetching = fetchOptions.Value.ScreenNames.Select(async (screenName, i) =>
                 {
-                    var fetching = batch.Select((screenName) =>
-                        Task.Run(() => FetchTweetsToRabbitMq(fetcher, serviceProvider, screenName, fetchOptions.Value.MaxBatchRetrieved)));
-
-                    Task.WhenAll(fetching).Wait();
-                }
+                    await Task.Delay(i * fetchOptions.Value.BatchDelay.Milliseconds);
+                    await Task.Run(() => FetchTweetsToRabbitMq(fetcher, serviceProvider, screenName, fetchOptions.Value.MaxBatchRetrieved));
+                });
+                Task.WhenAll(fetching).Wait();
                 watch.Stop();
                 logger.LogInformation($"Fetching has completed, total time taken: {watch.Elapsed}");
             }

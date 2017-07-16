@@ -21,10 +21,10 @@ namespace TweetArchiver.Fetch
 
         public IEnumerable<ITweet> GetTweets(string screenName, int maxBatchSize = 200)
         {
+            var currentBatchNo = 0;
             var lastId = 0L;
             var currentBatchSize = 0;
             var retrievedTotal = 0;
-            _logger.LogInformation($"Retrieving tweets for screen name = {screenName}");
             do
             {
                 var timelineParams = new UserTimelineParameters()
@@ -37,7 +37,7 @@ namespace TweetArchiver.Fetch
                     timelineParams.MaxId = lastId-1;
                 }
 
-                _logger.LogInformation($"Requesting batch for screen name = {screenName}");
+                _logger.LogInformation($"Requesting batch {++currentBatchNo} for screen name = {screenName}");
 
                 var fetchedTweets = Timeline.GetUserTimeline(screenName, timelineParams);
                 var currentBatch = fetchedTweets.ToList();
@@ -51,7 +51,7 @@ namespace TweetArchiver.Fetch
                     yield return tweet;
                 }
             } while (currentBatchSize != 0);
-            _logger.LogInformation($"Fetched {retrievedTotal} tweets for screen name = {screenName}");
+            _logger.LogInformation($"Fetched {retrievedTotal} tweets of {screenName} in {currentBatchNo} batches");
         }
     }
 }
