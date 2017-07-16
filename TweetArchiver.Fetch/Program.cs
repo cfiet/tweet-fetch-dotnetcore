@@ -52,7 +52,7 @@ namespace TweetArchiver.Fetch
                     Auth.SetCredentials(credentials);
                     return credentials;
                 })
-                .AddScoped((sp) =>
+                .AddSingleton((sp) =>
                 {
                     var rabbitConfig = sp.GetRequiredService<IOptions<RabbitMqConfig>>();
 
