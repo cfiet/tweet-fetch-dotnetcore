@@ -82,17 +82,20 @@ namespace TweetArchiver.Fetch
 
             logger.LogInformation($"Found {fetchOptions.Value.ScreenNames.Count()} screen names to fetch. Starting fetching in batches of {fetchOptions.Value.ParallelFetches}");
 
-            var watch = new Stopwatch();
-            watch.Start();
-            foreach(var batch in fetchOptions.Value.ScreenNames.Batch(fetchOptions.Value.ParallelFetches))
+            using (serviceProvider.GetRequiredService<IConnection>())
             {
-                var fetching = batch.Select((screenName) =>
-                    Task.Run(() => FetchTweetsToRabbitMq(fetcher, serviceProvider, screenName, fetchOptions.Value.MaxBatchRetrieved)));
+                var watch = new Stopwatch();
+                watch.Start();
+                foreach (var batch in fetchOptions.Value.ScreenNames.Batch(fetchOptions.Value.ParallelFetches))
+                {
+                    var fetching = batch.Select((screenName) =>
+                        Task.Run(() => FetchTweetsToRabbitMq(fetcher, serviceProvider, screenName, fetchOptions.Value.MaxBatchRetrieved)));
 
-                Task.WhenAll(fetching).Wait();
+                    Task.WhenAll(fetching).Wait();
+                }
+                watch.Stop();
+                logger.LogInformation($"Fetching has completed, total time taken: {watch.Elapsed}");
             }
-            watch.Stop();
-            logger.LogInformation($"Fetching has completed, total time taken: {watch.Elapsed}");
         }
 
         public static void FetchTweetsToRabbitMq(ITweetFetcher fetcher, IServiceProvider serviceProvider, string screenName, int batchSize)
