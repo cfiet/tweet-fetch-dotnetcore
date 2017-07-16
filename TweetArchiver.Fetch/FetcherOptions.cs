@@ -9,5 +9,7 @@ namespace TweetArchiver.Fetch
         public IEnumerable<string> ScreenNames { get; set; }
 
         public int MaxBatchRetrieved { get; set; } = 200;
+
+        public int ParallelFetches { get; set; } = Environment.ProcessorCount * 2;
     }
 }
