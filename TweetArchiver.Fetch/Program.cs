@@ -86,7 +86,7 @@ namespace TweetArchiver.Fetch
             watch.Start();
             foreach(var batch in fetchOptions.Value.ScreenNames.Batch(fetchOptions.Value.ParallelFetches))
             {
-                var fetching = fetchOptions.Value.ScreenNames.Select((screenName) =>
+                var fetching = batch.Select((screenName) =>
                     Task.Run(() => FetchTweetsToRabbitMq(fetcher, serviceProvider, screenName, fetchOptions.Value.MaxBatchRetrieved)));
 
                 Task.WhenAll(fetching).Wait();
